@@ -1,0 +1,39 @@
+<project name="LISA JUnit tests" default="lisaTests" basedir=".">
+    <property name="testReportDir" value="./lisa/reports/junit"/>
+    <property name="tempDir" value="./lisa-temp"/>
+
+    <!-- pull in our custom ant tasks -->
+    <taskdef resource="AntTasks.properties">
+        <classpath>
+            <fileset dir="${LISA_HOME}/lib/core" includes="*.jar"/>
+            <fileset dir="${LISA_HOME}/lib/endorsed" includes="*.jar"/>
+            <fileset dir="${LISA_HOME}/lib/shared" includes="*.jar"/>
+        </classpath>
+    </taskdef>
+    <target name="lisaTests" description="Executes a LISA Test Suite as JUnit tests.">
+        <!-- make sure old reports are deleted and that we have a place to report... -->
+        <delete dir="${testReportDir}"/>
+        <mkdir dir="${testReportDir}"/>
+
+        <delete dir="${tempDir}"/>
+        <mkdir dir="${tempDir}"/>
+
+        <fail unless="testPack" message="Please specify the testPack (ct or cert)."/>
+        <fail unless="lisaRegistry" message="Please specify the lisaRegistry."/>
+
+        <junitlisa
+                failureproperty="testsFailed"
+                toDir="${testReportDir}"
+                registry="${lisaRegistry}"
+                suite="Tests/${testPack}/Suites/${testSuite}.ste"
+                config="Configs/project.config"
+                user="${lisa.ant.junit.user}"
+                password="${lisa.ant.junit.password_enc}">
+            <jvmarg value="-Dlisa.tmpdir=${tempDir}"/>
+        </junitlisa>
+
+        <junitlisareport toDir="${testReportDir}"/>
+
+        <fail if="testsFailed" message="Lisa test suite ${testSuite}.ste in ${testPack} failed, please see the relevant LISA test report."/>
+    </target> 
+</project>
